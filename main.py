@@ -3,10 +3,10 @@ from UpdateDB import UpdateDB
 from CreateDB import CreateDB
 from QueryDB import QueryDB
 from DeleteDBRecords import DeleteDBRecords
-from avg_wait_time_generator import filtered_wait_time_averages_stops
-from weather_func import get_matching_weather_dates
-from sports import get_sports_schedule
-from get_on_time_percent import get_on_time_percent
+# from avg_wait_time_generator import filtered_wait_time_averages_stops
+# from weather_func import get_matching_weather_dates
+# from sports import get_sports_schedule
+# from get_on_time_percent import get_on_time_percent
 
 # Main function that controls the flow of the program.
 def main():
