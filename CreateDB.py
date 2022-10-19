@@ -53,14 +53,16 @@ class CreateDB:
 
         # Create ROUTES table.
         cursor.execute('DROP TABLE IF EXISTS ROUTES')
-        cursor.execute("""CREATE TABLE IF NOT EXISTS ROUTES(
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ROUTES(
         ROUTE_ID TEXT PRIMARY KEY,
         ROUTE_NAME TEXT
         )""")
 
         # Create STOPS table.
         cursor.execute('DROP TABLE IF EXISTS STOPS')
-        cursor.execute("""CREATE TABLE IF NOT EXISTS STOPS(
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS STOPS(
         STOP_ID TEXT PRIMARY KEY,
         STOP_NAME TEXT,
         DIRECTION TEXT
@@ -69,7 +71,8 @@ class CreateDB:
         # This is an intermediate table that allows us to retain knowledge about which stops are on which routes.
         # This is necessary because stops and routes have a many-to-many relationship.
         cursor.execute('DROP TABLE IF EXISTS STOPS_ON_ROUTES')
-        cursor.execute("""CREATE TABLE IF NOT EXISTS STOPS_ON_ROUTES(
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS STOPS_ON_ROUTES(
         STOP_ID TEXT NOT NULL REFERENCES STOPS(STOP_ID),
         ROUTE_ID TEXT NOT NULL REFERENCES ROUTES(ROUTE_ID),
         PRIMARY KEY (STOP_ID, ROUTE_ID)
@@ -77,14 +80,15 @@ class CreateDB:
 
         # Create ESTIMATES table.
         cursor.execute('DROP TABLE IF EXISTS ESTIMATES')
-        cursor.execute("""CREATE TABLE IF NOT EXISTS ESTIMATES(
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ESTIMATES(
         ID INTEGER PRIMARY KEY,
         ETA INTEGER,
         TIME_CHECKED INTEGER,
         VEHICLE_ID STRING,
         PASSENGERS STRING,
         STOP_ID INTEGER,
-        ROUTE_ID INTEGER,
+        ROUTE_ID TEXT,
         FOREIGN KEY (STOP_ID)
             REFERENCES STOPS(STOP_ID),
         FOREIGN KEY (ROUTE_ID)
@@ -126,7 +130,7 @@ class CreateDB:
                     stop_list.append((key, value[0], value[1]))
                     stop_set.add(key)
 
-        # Inser the data into the respective tables.
+        # Insert the data into the respective tables.
         cursor.executemany('INSERT INTO ROUTES VALUES(?, ?)', route_set)
         cursor.executemany('INSERT INTO STOPS VALUES(?, ?, ?)', stop_list)
         cursor.executemany('INSERT INTO STOPS_ON_ROUTES VALUES(?, ?)', stop_route_combo_set)

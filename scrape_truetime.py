@@ -116,7 +116,7 @@ class Scraper:
     def __get_stop_list(self):
         url = 'https://truetime.portauthority.org/bustime/wireless/html/home.jsp'
         # Scrape the route names
-        routes = scrape_dynamic_tag(url, 'larger')
+        routes = self.scrape_dynamic_tag(url, 'larger')
 
         list_of_dicts = []
 
@@ -127,17 +127,17 @@ class Scraper:
             r_num = r_elements[0].strip()  # The 0-index item in the list is the number
 
             # Check whether inbound and outbound are available for each route
-            outbound, inbound = check_available_directions(r_num)
+            outbound, inbound = self.check_available_directions(r_num)
 
             # INBOUND and OUTBOUND are separate HTML pages that must be scraped separately.
             if outbound:
                 url = f'https://truetime.portauthority.org/bustime/wireless/html/selectstop.jsp?route=Port+Authority+Bus%3A{r_num}&direction=Port+Authority+Bus%3AOUTBOUND'
-                out_stop_names_and_ids: dict = zip_stop_id_and_name(url, 'OUTBOUND', r_num, r_name)
+                out_stop_names_and_ids = self.zip_stop_id_and_name(url, 'OUTBOUND', r_num, r_name)
                 list_of_dicts.append(out_stop_names_and_ids)
 
             if inbound:
                 url = f'https://truetime.portauthority.org/bustime/wireless/html/selectstop.jsp?route=Port+Authority+Bus%3A{r_num}&direction=Port+Authority+Bus%3AINBOUND'
-                in_stop_names_and_ids: dict = zip_stop_id_and_name(url, 'INBOUND', r_num, r_name)
+                in_stop_names_and_ids = self.zip_stop_id_and_name(url, 'INBOUND', r_num, r_name)
                 list_of_dicts.append(in_stop_names_and_ids)
 
         return list_of_dicts
@@ -158,7 +158,7 @@ class Scraper:
     # with each bus stop.
     def __test_results(self):
         cnt = 0
-        list_of_dicts = get_stop_list()
+        list_of_dicts = self.get_stop_list()
         list_of_ids = []
         for d in list_of_dicts:
             for key in d.keys():
