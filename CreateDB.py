@@ -1,5 +1,5 @@
 import sqlite3
-from scrape_truetime import get_stop_list
+from Scraper import Scraper
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Calling methods in this function may delete/drop any existing database with the same name in its directory!

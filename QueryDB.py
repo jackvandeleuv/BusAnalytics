@@ -97,7 +97,7 @@ class QueryDB:
 
     # Function to make quick queries for debugging.
     @staticmethod
-    def __test_data():
+    def test_data():
         # Here's the boilerplate code needed to query the database.
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()

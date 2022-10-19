@@ -57,7 +57,7 @@ class UpdateDB:
 
     # Private helper function that takes in a url and outputs scraped data based on a specified HTML tag.
     @staticmethod
-    def scrape_html_tags(session, url, tag, attribute):
+    def __scrape_html_tags(session, url, tag, attribute):
         page = session.get(url)
 
         # Specify lxml parser to avoid different default parsers on different machines
@@ -73,7 +73,7 @@ class UpdateDB:
         return result
 
     @staticmethod
-    def process_eta_text(eta_text):
+    def __process_eta_text(eta_text):
         eta_list = []
         # eta_text will be alternating stop names and ETAs. We treat them differently based on whether they are odd or
         # even.
@@ -97,7 +97,7 @@ class UpdateDB:
 
 
     @staticmethod
-    def process_vehicle_text(vehicle_text):
+    def __process_vehicle_text(vehicle_text):
         vehicle_data = []
         for string in vehicle_text:
             # Find bus id number
@@ -117,7 +117,7 @@ class UpdateDB:
         return vehicle_data
 
     @staticmethod
-    def scrape_estimates(lines):
+    def __scrape_estimates(lines):
         urls_and_data = UpdateDB.__get_urls_to_query(lines)
         session = requests.session()
         estimates = []
@@ -127,10 +127,10 @@ class UpdateDB:
             url = combo[3]
             current_time = str(datetime.datetime.now())
 
-            strong_text = UpdateDB.scrape_html_tags(session, url, 'larger', 'strong')
-            span_text = UpdateDB.scrape_html_tags(session, url, 'smaller', 'span')
-            eta_data = UpdateDB.process_eta_text(strong_text)
-            vehicle_data = UpdateDB.process_vehicle_text(span_text)
+            strong_text = UpdateDB.__scrape_html_tags(session, url, 'larger', 'strong')
+            span_text = UpdateDB.__scrape_html_tags(session, url, 'smaller', 'span')
+            eta_data = UpdateDB.__process_eta_text(strong_text)
+            vehicle_data = UpdateDB.__process_vehicle_text(span_text)
 
             # Bare-minimum check for scrape failure.
             if len(eta_data) % 2 == 0 and len(eta_data) == len(vehicle_data):

@@ -19,7 +19,7 @@ class Scraper:
     # This function checks the HTML page for a particular bus route, and determines whether the route includes INBOUND
     # buses, OUTBOUND buses, both, or neither. The result is two booleans values: outbound and inbound.
     @staticmethod
-    def check_available_directions(route_num):
+    def __check_available_directions(route_num):
         url = f'https://truetime.portauthority.org/bustime/wireless/html/selectdirection' \
               f'.jsp?route=Port%20Authority%20Bus:{route_num}'
         page = requests.get(url)
@@ -38,7 +38,7 @@ class Scraper:
     # This function takes in a url and HTML tag, and then scrapes the url for the given tag. It returns a list of
     # strings, which contains every string found inside the given tag at the given url.
     @staticmethod
-    def scrape_html_tag(url, tag):
+    def __scrape_html_tag(url, tag):
         page = requests.get(url)
         # Specify lxml parser to avoid different default parsers on different machines
         soup_object = bs4.BeautifulSoup(page.text, features='lxml')
@@ -55,7 +55,7 @@ class Scraper:
     # the other parameters as a dict with the following structure for each key/value pair: {StopID: [StopName,
     # Direction, RouteID, RouteName]}
     @staticmethod
-    def zip_stop_id_and_name(url, direction, r_num, r_name):
+    def __zip_stop_id_and_name(url, direction, r_num, r_name):
         page = requests.get(url)
         # Specify lxml parser to avoid different default parsers on different machines
         soup_object = bs4.BeautifulSoup(page.text, features='lxml')
@@ -90,7 +90,7 @@ class Scraper:
     # information found under the given url and class tag. Unlike bs4, Selenium works for content served dynamically
     # by JavaScript.
     @staticmethod
-    def scrape_dynamic_tag(url, class_name):
+    def __scrape_dynamic_tag(url, class_name):
         # This is boilerplate code that initializes a Chrome web driver for use by the Selenium library.
         options = Options()
         # Stop browser windows from actually popping up.
@@ -123,7 +123,7 @@ class Scraper:
     def get_stop_list():
         url = 'https://truetime.portauthority.org/bustime/wireless/html/home.jsp'
         # Scrape the route names
-        routes = Scraper.scrape_dynamic_tag(url, 'larger')
+        routes = Scraper.__scrape_dynamic_tag(url, 'larger')
 
         list_of_dicts = []
 
@@ -134,19 +134,19 @@ class Scraper:
             r_num = r_elements[0].strip()  # The 0-index item in the list is the number
 
             # Check whether inbound and outbound are available for each route
-            outbound, inbound = Scraper.check_available_directions(r_num)
+            outbound, inbound = Scraper.__check_available_directions(r_num)
 
             # INBOUND and OUTBOUND are separate HTML pages that must be scraped separately.
             if outbound:
                 url = f'https://truetime.portauthority.org/bustime/wireless/html/selectstop.jsp?route=Port' \
                       f'+Authority+Bus%3A{r_num}&direction=Port+Authority+Bus%3AOUTBOUND'
-                out_stop_names_and_ids = Scraper.zip_stop_id_and_name(url, 'OUTBOUND', r_num, r_name)
+                out_stop_names_and_ids = Scraper.__zip_stop_id_and_name(url, 'OUTBOUND', r_num, r_name)
                 list_of_dicts.append(out_stop_names_and_ids)
 
             if inbound:
                 url = f'https://truetime.portauthority.org/bustime/wireless/html/selectstop.jsp?route=Port' \
                       f'+Authority+Bus%3A{r_num}&direction=Port+Authority+Bus%3AINBOUND'
-                in_stop_names_and_ids = Scraper.zip_stop_id_and_name(url, 'INBOUND', r_num, r_name)
+                in_stop_names_and_ids = Scraper.__zip_stop_id_and_name(url, 'INBOUND', r_num, r_name)
                 list_of_dicts.append(in_stop_names_and_ids)
 
         return list_of_dicts
