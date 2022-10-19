@@ -18,24 +18,29 @@ class UpdateDB:
     # being a url.
     @staticmethod
     def __get_urls_to_query(lines):
-        # This is the start of the query, which we'll add to as we go.
-        route_subclause = " WHERE ROUTE_ID IN (\""
+        # Wrap every line str in a tuple, which is required by SQLite's executemany() method.
+        for line in lines:
+            line = (line,)
 
-        # If we have one line/route, replace our initial route_subclause with a simpler clause filtering by one value.
-        if len(lines) == 1:
-            route_subclause = f' WHERE ROUTE_ID = "{lines[0]}"'
+        # Prepare our query, which will be assembled to fit a variable number of parameters based on the length of
+        # lines.
+        query = """SELECT ROUTE_ID, DIRECTION, STOP_ID FROM STOPS 
+                    JOIN STOPS_ON_ROUTES USING(STOP_ID) 
+                    JOIN ROUTES USING(ROUTE_ID) 
+                    WHERE ROUTE_ID IN ("""
 
-        # If there are multiple routes to query, add together multiple values using the IN operator.
-        if len(lines) > 1:
-            cs_lines = '","'.join(lines)
-            route_subclause = route_subclause + cs_lines + "\")"
+        # For every item in lines, add a place to insert input.
+        for i in range(len(lines)):
+            query = query + "?, "
+
+        # Trim off the last comma and blank space.
+        query = query[:-2] + ")"
 
         # Query the DB.
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
-        query = 'SELECT ROUTE_ID, DIRECTION, STOP_ID FROM STOPS ' + 'JOIN STOPS_ON_ROUTES USING(STOP_ID) JOIN ROUTES USING(ROUTE_ID)' + route_subclause
 
-        cursor.execute(query)
+        cursor.executemany(query, lines)
         results = cursor.fetchall()
         connection.commit()
 
@@ -147,6 +152,7 @@ class UpdateDB:
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
 
-        cursor.executemany('INSERT INTO ESTIMATES (ETA, TIME_CHECKED, VEHICLE_ID, PASSENGERS, STOP_ID, ROUTE_ID) VALUES(?, ?, ?, ?, ?, ?)', estimates)
+        cursor.executemany("""INSERT INTO ESTIMATES (ETA, TIME_CHECKED, VEHICLE_ID, PASSENGERS, STOP_ID, ROUTE_ID) 
+                                VALUES(?, ?, ?, ?, ?, ?)""", estimates)
 
         connection.commit()

@@ -53,8 +53,8 @@ class QueryDB:
 
         cursor.execute("SELECT STOP_ID, STOP_NAME "
                        "FROM STOPS JOIN ESTIMATES USING(STOP_ID) "
-                       "WHERE ROUTE_ID = '" + route + "' "
-                       "GROUP BY STOP_ID, STOP_NAME ORDER BY STOP_NAME")
+                       "WHERE ROUTE_ID = ? "
+                       "GROUP BY STOP_ID, STOP_NAME ORDER BY STOP_NAME", (route,))
         scraped_stops = cursor.fetchall()
 
         for i in range(len(scraped_stops)):
