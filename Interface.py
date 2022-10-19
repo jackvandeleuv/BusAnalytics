@@ -3,10 +3,6 @@ from UpdateDB import UpdateDB
 from CreateDB import CreateDB
 from QueryDB import QueryDB
 from DeleteDBRecords import DeleteDBRecords
-# from avg_wait_time_generator import filtered_wait_time_averages_stops
-# from weather_func import get_matching_weather_dates
-# from sports import get_sports_schedule
-# from get_on_time_percent import get_on_time_percent
 
 
 class Interface:
@@ -115,7 +111,7 @@ class Interface:
             stops_to_delete = [choice2a.strip()]
 
         # Pass the list of stops to delete_by_criteria, which deletes all data points matching those routes.
-        DeleteDBRecords.delete_by_criteria(stops_to_delete, [], [])
+        DeleteDBRecords.delete_by_stops(stops_to_delete)
 
         print(f'Successfully deleted all data for {choice2a}')
 
@@ -143,7 +139,7 @@ class Interface:
             routes_to_delete = [choice2b.strip()]
 
         # Pass the list of routes to delete_by_criteria, which deletes all data points matching those routes.
-        DeleteDBRecords.delete_by_criteria([], routes_to_delete, [])
+        DeleteDBRecords.delete_by_lines(routes_to_delete)
 
         print(f'Successfully deleted all data for {choice2b}')
 
@@ -171,7 +167,7 @@ class Interface:
             dates_to_delete = [choice2c.strip()]
 
         # Pass the list of dates to delete_by_criteria, which deletes all data points matching those dates.
-        DeleteDBRecords.delete_by_criteria([], [], dates_to_delete)
+        DeleteDBRecords.delete_by_dates(dates_to_delete)
 
         print(f'Successfully deleted all data for {choice2c}')
 
