@@ -7,13 +7,16 @@ from DeleteDBRecords import DeleteDBRecords
 
 class Interface:
     def __init__(self):
-        pass
+        self.quit_request = False
+
+    def get_quit_request(self):
+        return self.quit_request
+
+    def __request_quit(self):
+        self.quit_request = True
 
     # Main function that controls the flow of the program.
     def activate(self):
-
-        print("Welcome to the Main Menu. Enter EXIT to exit the program.")
-
         # The main menu runs in a loop, with four possible options for users. If the user enters EXIT, the loop will break
         # and the program will end.
         while True:
@@ -46,7 +49,7 @@ class Interface:
             except ValueError as ve:
                 print(ve)
 
-    def __scrape_window(self):
+    def scrape_window(self):
         # Loop through the options in this sub-menu until the user requests to return to the main menu.
         while True:
             choice1 = input(
@@ -171,7 +174,7 @@ class Interface:
 
         print(f'Successfully deleted all data for {choice2c}')
 
-    def __delete_data_window(self):
+    def delete_data_window(self):
         request_return = False
 
         while not request_return:
@@ -198,17 +201,17 @@ class Interface:
             # These three functions provide a similar feature, which allows the user to delete all ESTIMATES tuples matching
             # stops, routes, or dates respectively.
             if choice1 == 'STOP_ID':
-                delete_by_stops()
+                self.__delete_by_stops()
 
             if choice1 == 'ROUTE_ID':
-                delete_by_routes()
+                self.__delete_by_routes()
 
             if choice1 == 'DATES':
-                delete_by_dates()
+                self.__delete_by_dates()
 
     # This window allows the user to explore average frequency (gap between bus arrivals) at specific stops and routes,
     # filtered by a variety of criteria selected by the user.
-    def __get_avg_frequency_by_criteria(self):
+    def get_avg_frequency_by_criteria(self):
         # This set contains all the dates (each date is a str formatted like '2022-10-10') that we would like to use in our
         # calculation of the average frequency.
         limit_by_days = set()
