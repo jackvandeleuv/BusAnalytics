@@ -1,8 +1,7 @@
-from Interface import Interface
+from ScrapeWindow import ScrapeWindow
 
 
 def main():
-    interface = Interface()
     while True:
         main_select = input("***Main Menu***\n0) Quit.\n1) Scrape new data.\n2) Delete existing data.\n"
                             "3) Analyse existing data.\n")
@@ -14,7 +13,7 @@ def main():
             break
 
         if int(main_select) == 1:
-            interface.scrape_window()
+            ScrapeWindow.scrape_window()
 
         if int(main_select) == 2:
             interface.delete_window()

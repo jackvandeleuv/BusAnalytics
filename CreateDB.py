@@ -102,7 +102,7 @@ class CreateDB:
     @staticmethod
     def __fill_routes_and_stops():
         # Structure of each dict in the list is {STOP_ID: [STOP_NAME, DIRECTION, ROUTE_ID, ROUTE_NAME]}
-        list_of_dicts = get_stop_list()
+        list_of_dicts = Scraper.get_stop_list()
 
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
@@ -134,5 +134,29 @@ class CreateDB:
         cursor.executemany('INSERT INTO ROUTES VALUES(?, ?)', route_set)
         cursor.executemany('INSERT INTO STOPS VALUES(?, ?, ?)', stop_list)
         cursor.executemany('INSERT INTO STOPS_ON_ROUTES VALUES(?, ?)', stop_route_combo_set)
+
+        connection.commit()
+
+    @staticmethod
+    def drop_estimates():
+        connection = sqlite3.Connection('transit_data.db')
+        cursor = connection.cursor()
+
+        # Create ESTIMATES table.
+        cursor.execute('DROP TABLE IF EXISTS ESTIMATES')
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ESTIMATES(
+        ID INTEGER PRIMARY KEY,
+        ETA INTEGER,
+        TIME_CHECKED INTEGER,
+        VEHICLE_ID STRING,
+        PASSENGERS STRING,
+        STOP_ID INTEGER,
+        ROUTE_ID TEXT,
+        FOREIGN KEY (STOP_ID)
+            REFERENCES STOPS(STOP_ID),
+        FOREIGN KEY (ROUTE_ID)
+            REFERENCES ROUTES(ROUTE_ID)
+        )""")
 
         connection.commit()

@@ -32,14 +32,19 @@ class QueryDB:
     def get_scraped_stops():
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
-        cursor.execute('SELECT DISTINCT(STOP_ID) FROM ESTIMATES')
-        scraped_stops = cursor.fetchall()
+        cursor.execute("SELECT DISTINCT(STOP_ID), ROUTES.ROUTE_ID FROM ESTIMATES "
+                       "JOIN STOPS_ON_ROUTES USING(STOP_ID) "
+                       "JOIN ROUTES USING(ROUTE_ID)"
+                       "ORDER BY ROUTES.ROUTE_ID DESC")
+        results = cursor.fetchall()
         connection.commit()
 
-        # Format the result to remove the tuples wrapped around the STOP_IDs.
-        for i in range(len(scraped_stops)):
-            stop = scraped_stops[i]
-            scraped_stops[i] = stop[0]
+        scraped_stops = {}
+        # Insert the distinct stop IDs and routes into a dict.
+        for i in range(len(results)):
+            stop = results[i][0]
+            route = results[i][1]
+            scraped_stops[stop] = route
 
         return scraped_stops
 
