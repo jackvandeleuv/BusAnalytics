@@ -7,90 +7,79 @@ from DeleteDBRecords import DeleteDBRecords
 
 class Interface:
     def __init__(self):
-        self.quit_request = False
-
-    def get_quit_request(self):
-        return self.quit_request
-
-    def __request_quit(self):
-        self.quit_request = True
-
-    # Main function that controls the flow of the program.
-    def activate(self):
-        # The main menu runs in a loop, with four possible options for users. If the user enters EXIT, the loop will break
-        # and the program will end.
-        while True:
-            try:
-                main_select = input("\nEnter 1/2/3 to pick an option:\n1) Scrape new data\n2) Delete existing data\n3) "
-                                    "Explore existing data\n")
-                if main_select == 'EXIT':
-                    break
-
-                # The scape window is the menu that allows the user to scrape new data and add it to their database.
-                if int(main_select) == 1:
-                    scrape_window()
-
-                # The delete window is the menu that allows the user to modify their existing database of transit data
-                # and delete ESTIMATES filtered by stops, routes, or dates.
-                if int(main_select) == 2:
-                    delete_data_window()
-
-                # The explore window allows the user to generate summary statistics about the transit data they've already
-                # collected.
-                if int(main_select) == 3:
-                    get_avg_frequency_by_criteria()
-
-                # If the user entered a value that wasn't one of the four options, print the error message and repeat the
-                # loop.
-                if int(main_select) < 0 or 3 < int(main_select):
-                    print('I couldn\'t understand that. Please enter 1, 2, or 3.')
-
-            # If the user didn't enter an int or 'EXIT', print the error message and repeat teh loop.
-            except ValueError as ve:
-                print(ve)
+        pass
 
     def scrape_window(self):
         # Loop through the options in this sub-menu until the user requests to return to the main menu.
         while True:
-            choice1 = input(
-                "\nWelcome to the scrape menu. Enter 'RETURN' to return to the main menu.\nTo see a list of "
-                "routes that are available to scrape, enter ROUTES. To begin scraping, enter the lines you "
-                "would like to scrape separated by commas, like so: 71A, 71C, 65\n")
+            user_input = input("***Scrape New Data***\n0) Return to Main Menu\n1) See a list of routes available to "
+                               "scrape.\n2) Scrape new data.\n")
 
-            if choice1 == 'RETURN':
+            if not user_input.isdigit():
+                print("\nPlease enter an integer to select one of the menu options.\n")
+
+            if int(user_input) == 0:
                 return
 
-            # If the user selects ROUTES, query the db for all routes where ESTIMATE data has been previouly scraped and
-            # display those as options.
-            if choice1 == 'ROUTES':
+            # Query the db for all routes where ESTIMATE data has been previously scraped.
+            if int(user_input) == 1:
                 available_routes = QueryDB.get_available_routes()
+                print("***Available Routes***")
                 for route in available_routes:
-                    print(route)
+                    id = route[0]
+                    name = route[1]
+                    print("ROUTE_ID: {:4s} (Name: {:s})".format(id, name))
 
             # Take the user input. If the user entered comma-separated values, split the values and remove white-space.
-            if choice1 != 'ROUTES':
-                routes_to_scrape = choice1.split(',')
+            if int(user_input) == 2:
+                route_choice = input("To begin scraping, enter the IDs for the lines you would like to scrape "
+                                     "separated by commas, like so: 71A, 71C, 65\n")
+                routes_to_scrape = route_choice.split(',')
+                routes_valid = True
+
+                # Strip off the trailing spaces from the user input.
                 for i in range(len(routes_to_scrape)):
                     routes_to_scrape[i] = routes_to_scrape[i].strip()
+                    routes_to_scrape[i] = routes_to_scrape[i].upper()
+                    # Check to make sure that the route IDs entered are not too long, which indicates an invalid
+                    # route ID.
+                    if len(routes_to_scrape[i]) > 5:
+                        routes_valid = False
+
+                if not routes_valid:
+                    print("Sorry, the system could not recognize one of the route names you entered.")
 
                 # Ask the user how many times they want to make a pass through the TrueTime website to scrape more data.
-                n_iters = int(input("""Got it! How many times would you like to scrape the TrueTime website? On average, 
-                it takes about 1 minute per route, per scrape. Enter an int: """))
-                print(f'Scraping {routes_to_scrape}, {n_iters} times...')
+                if routes_valid:
+                    n_iters = input("Got it! How many times would you like to scrape the TrueTime website? On average, "
+                                    "it takes about 45 seconds per route, per scrape. Enter an int:\n")
 
-                cnt = 0
-                while cnt < n_iters:
-                    # Time each loop so the user can see an updated count of how long each pass through the website takes.
-                    start = timeit.default_timer()
-                    # Use the scrape_estimates method to gather and process the data.
-                    estimates = UpdateDB.scrape_estimates(routes_to_scrape)
-                    if estimates is not None:
-                        # If data was returned successfully, enter it into the transit_data database.
-                        UpdateDB.update_db(estimates)
-                    stop = timeit.default_timer()
-                    print('One scrape cycle completed, taking:', stop - start, ' seconds.')
-                    cnt += 1
-        print('Done scraping!')
+                    if not n_iters.isdigit():
+                        print("Please enter a valid integer, indicating how many passes you would like to make through "
+                              "the TrueTime website.")
+
+                    if n_iters.isdigit():
+                        n_iters = int(n_iters)
+                        print(f'Scraping {routes_to_scrape}, {n_iters} times...')
+                        try:
+                            self.__scrape_new_data(n_iters, tuple(routes_to_scrape))
+                        except RuntimeError:
+                            print("There are no available routes with the given IDs.")
+                        print(f"{n_iters} scrapes completed.\n")
+
+    def __scrape_new_data(self, n_iters, routes_to_scrape):
+        cnt = 0
+        while cnt < n_iters:
+            # Time each loop so the user can see an updated count of how long each pass through the website takes.
+            start = timeit.default_timer()
+            # Use the scrape_estimates method to gather and process the data.
+            estimates = UpdateDB.scrape_estimates(routes_to_scrape)
+            if estimates is not None:
+                # If data was returned successfully, enter it into the transit_data database.
+                UpdateDB.update_db(estimates)
+            stop = timeit.default_timer()
+            print('Successfully captured a snapshot of all relevant routes/stops, taking', round(stop - start), 'seconds.')
+            cnt = cnt + 1
 
     # If the user selected the option to delete all data from specific stops, this function is called.
     def __delete_by_stops(self):
@@ -174,7 +163,7 @@ class Interface:
 
         print(f'Successfully deleted all data for {choice2c}')
 
-    def delete_data_window(self):
+    def delete_window(self):
         request_return = False
 
         while not request_return:
@@ -211,7 +200,7 @@ class Interface:
 
     # This window allows the user to explore average frequency (gap between bus arrivals) at specific stops and routes,
     # filtered by a variety of criteria selected by the user.
-    def get_avg_frequency_by_criteria(self):
+    def analyze_window(self):
         # This set contains all the dates (each date is a str formatted like '2022-10-10') that we would like to use in our
         # calculation of the average frequency.
         limit_by_days = set()

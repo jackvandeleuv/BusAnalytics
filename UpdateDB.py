@@ -18,10 +18,6 @@ class UpdateDB:
     # being a url.
     @staticmethod
     def __get_urls_to_query(lines):
-        # Wrap every line str in a tuple, which is required by SQLite's executemany() method.
-        for line in lines:
-            line = (line,)
-
         # Prepare our query, which will be assembled to fit a variable number of parameters based on the length of
         # lines.
         query = """SELECT ROUTE_ID, DIRECTION, STOP_ID FROM STOPS 
@@ -40,9 +36,12 @@ class UpdateDB:
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
 
-        cursor.executemany(query, lines)
+        cursor.execute(query, lines)
         results = cursor.fetchall()
         connection.commit()
+
+        if len(results) == 0:
+            raise RuntimeError("No valid route IDs entered.")
 
         urls_and_data = []
         # The URLs for the specific pages we want have three parts, route, direction, and stop_id in that order. We've
@@ -95,7 +94,6 @@ class UpdateDB:
 
         return eta_list
 
-
     @staticmethod
     def __process_vehicle_text(vehicle_text):
         vehicle_data = []
@@ -117,7 +115,7 @@ class UpdateDB:
         return vehicle_data
 
     @staticmethod
-    def __scrape_estimates(lines):
+    def scrape_estimates(lines):
         urls_and_data = UpdateDB.__get_urls_to_query(lines)
         session = requests.session()
         estimates = []
