@@ -153,6 +153,7 @@ class CreateDB:
         PASSENGERS STRING,
         STOP_ID INTEGER,
         ROUTE_ID TEXT,
+        SCRAPE_ID REAL,
         FOREIGN KEY (STOP_ID)
             REFERENCES STOPS(STOP_ID),
         FOREIGN KEY (ROUTE_ID)

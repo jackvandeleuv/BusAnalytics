@@ -1,4 +1,6 @@
+import time
 import timeit
+from datetime import datetime
 from UpdateDB import UpdateDB
 from CreateDB import CreateDB
 from QueryDB import QueryDB
@@ -70,12 +72,13 @@ class ScrapeInterface:
 
     @staticmethod
     def __scrape_new_data(n_iters, routes_to_scrape):
+        scrape_id = time.time()
         cnt = 0
         while cnt < n_iters:
             # Time each loop so the user can see an updated count of how long each pass through the website takes.
             start = timeit.default_timer()
             # Use the scrape_estimates method to gather and process the data.
-            estimates = UpdateDB.scrape_estimates(routes_to_scrape)
+            estimates = UpdateDB.scrape_estimates(routes_to_scrape, scrape_id)
             if estimates is None:
                 print("Something went wrong. No data was returned by this attempt!")
             if estimates is not None:

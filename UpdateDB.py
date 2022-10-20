@@ -115,7 +115,7 @@ class UpdateDB:
         return vehicle_data
 
     @staticmethod
-    def scrape_estimates(lines):
+    def scrape_estimates(lines, scrape_id):
         urls_and_data = UpdateDB.__get_urls_to_query(lines)
         session = requests.session()
         estimates = []
@@ -140,7 +140,7 @@ class UpdateDB:
                         vehicleno = vehicle_data[index]
                         passengers = vehicle_data[index + 1]
                         stop_id = combo[2]
-                        estimates.append((eta, current_time, vehicleno, passengers, stop_id, routeno))
+                        estimates.append((eta, current_time, vehicleno, passengers, stop_id, routeno, scrape_id))
 
         session.close()
         return estimates
@@ -150,7 +150,7 @@ class UpdateDB:
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
 
-        cursor.executemany("""INSERT INTO ESTIMATES (ETA, TIME_CHECKED, VEHICLE_ID, PASSENGERS, STOP_ID, ROUTE_ID) 
-                                VALUES(?, ?, ?, ?, ?, ?)""", estimates)
+        cursor.executemany("""INSERT INTO ESTIMATES (ETA, TIME_CHECKED, VEHICLE_ID, PASSENGERS, STOP_ID, ROUTE_ID, 
+                                SCRAPE_ID) VALUES(?, ?, ?, ?, ?, ?, ?)""", estimates)
 
         connection.commit()
