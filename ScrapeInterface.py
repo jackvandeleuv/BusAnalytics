@@ -35,7 +35,7 @@ class ScrapeInterface:
 
             # Take the user input. If the user entered comma-separated values, split the values and remove white-space.
             if int(user_input) == 2:
-                route_choice = input("To begin scraping, enter the IDs for the lines you would like to scrape "
+                route_choice = input("To begin scraping, enter the IDs for the routes you would like to scrape "
                                      "separated by commas, like so: 71A, 71C, 65\n")
                 routes_to_scrape = route_choice.split(',')
                 routes_valid = True

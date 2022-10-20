@@ -1,7 +1,7 @@
 import sqlite3
 
 
-# This class is used to delete records from the ESTIMATES table based on stops, lines, or dates. The user can only
+# This class is used to delete records from the ESTIMATES table based on stops, routes, or dates. The user can only
 # select of these delete-by criteria at a time.
 class DeleteDBRecords:
     def __init__(self):

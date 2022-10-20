@@ -19,13 +19,13 @@ class UpdateDB:
     @staticmethod
     def __get_urls_to_query(lines):
         # Prepare our query, which will be assembled to fit a variable number of parameters based on the length of
-        # lines.
+        # routes.
         query = """SELECT ROUTE_ID, DIRECTION, STOP_ID FROM STOPS 
                     JOIN STOPS_ON_ROUTES USING(STOP_ID) 
                     JOIN ROUTES USING(ROUTE_ID) 
                     WHERE ROUTE_ID IN ("""
 
-        # For every item in lines, add a place to insert input.
+        # For every item in routes, add a place to insert input.
         for i in range(len(lines)):
             query = query + "?, "
 

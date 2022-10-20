@@ -113,7 +113,7 @@ class Scraper:
 
     # This is the main function for this module. It takes no arguments, and outputs a list of dicts. There is a dict for
     # each line/direction combination (e.g. 71A OUTBOUND). Each key in each dict represents a unique bus stop/bus route
-    # combination. Most bus stops have multiple lines that stop there, so between the different dicts there are
+    # combination. Most bus stops have multiple routes that stop there, so between the different dicts there are
     # identical keys.
 
     # Input: None
@@ -166,7 +166,7 @@ class Scraper:
         #     print(link.string)
         print(soup.prettify())
 
-    # For debugging purposes. This function tests the output from get_stop_list() to see how many bus lines are
+    # For debugging purposes. This function tests the output from get_stop_list() to see how many bus routes are
     # associated with each bus stop.
     @staticmethod
     def __test_results():
