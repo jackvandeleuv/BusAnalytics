@@ -1,4 +1,7 @@
-from ScrapeWindow import ScrapeWindow
+import DeleteInterface
+from ScrapeInterface import ScrapeInterface
+from DeleteInterface import DeleteInterface
+from AnalyzeInterface import AnalyzeInterface
 
 
 def main():
@@ -13,13 +16,13 @@ def main():
             break
 
         if int(main_select) == 1:
-            ScrapeWindow.scrape_window()
+            ScrapeInterface.scrape_window()
 
         if int(main_select) == 2:
-            interface.delete_window()
+            DeleteInterface.delete_window()
 
         if int(main_select) == 3:
-            interface.analyze_window()
+            AnalyzeInterface.analyze_window()
 
 
 if __name__ == '__main__':

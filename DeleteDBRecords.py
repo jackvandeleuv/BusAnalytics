@@ -12,9 +12,9 @@ class DeleteDBRecords:
         assert type(stops) == list
 
         # Validate input inside inputted lists.
-        for stop in stops:
-            assert type(stop) == str
-            stop = (stop,)
+        for i in range(len(stops)):
+            assert type(stops[i]) == str
+            stops[i] = (stops[i],)
 
         connection = sqlite3.Connection('transit_data.db')
         cur = connection.cursor()
@@ -30,9 +30,9 @@ class DeleteDBRecords:
         assert type(lines) == list
 
         # Validate input inside inputted lists.
-        for line in lines:
-            assert type(line) == str
-            line = (line,)
+        for i in range(len(lines)):
+            assert type(lines[i]) == str
+            lines[i] = (lines[i],)
 
         connection = sqlite3.Connection('transit_data.db')
         cur = connection.cursor()
@@ -48,9 +48,9 @@ class DeleteDBRecords:
         assert type(dates) == list
 
         # Validate input inside inputted lists.
-        for date in dates:
-            assert type(date) == str
-            date = (date,)
+        for i in range(len(dates)):
+            assert type(dates[i]) == str
+            dates[i] = (dates[i],)
 
         connection = sqlite3.Connection('transit_data.db')
         cur = connection.cursor()
