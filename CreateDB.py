@@ -1,19 +1,15 @@
 import sqlite3
 from Scraper import Scraper
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Calling methods in this function may delete/drop any existing database with the same name in its directory!
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+# The methods in the CreateDB class create a SQLite3 database in the same directory.
 
-# DB schema here: https://docs.google.com/document/d/16u6fOXoH7vvdpqc0chSfZFtU7WNWvtZJj_QmHI8KwQc/edit?usp=sharing
 # Broadly, the database for this application has four tables:
 #     STOPS: Basic information about all current stops offered by the TrueTime website.
 #     ROUTES: Basic information about all current routes offered by the TrueTime website.
 #     STOPS_ON_ROUTES: Table to link STOPS and ROUTES by primary key.
 #     ESTIMATES: Each row is a snapshot of the current estimated ETAs in a specific location with each row having
 #     a unique combination of bus stop, route, and time stamp.
-# The methods in the CreateDB class create a SQLite3 database in the same directory.
 class CreateDB:
     # This method creates a fresh copy of transit_data.db, and then scrapes the TrueTime Pittsburgh Port Authority
     # website to find all active routes and stops that are available to scrape.

@@ -8,9 +8,10 @@ class DeleteDBRecords:
     def delete_by_stops(stops):
         assert type(stops) == list
 
-        # Validate input inside inputted lists.
+        # Validate input inside given lists.
         for i in range(len(stops)):
             assert type(stops[i]) == str
+            # Package inside one_tuple for use in parameterized query.
             stops[i] = (stops[i],)
 
         connection = sqlite3.Connection('transit_data.db')
@@ -29,6 +30,7 @@ class DeleteDBRecords:
         # Validate input inside inputted lists.
         for i in range(len(lines)):
             assert type(lines[i]) == str
+            # Package inside one_tuple for use in parameterized query.
             lines[i] = (lines[i],)
 
         connection = sqlite3.Connection('transit_data.db')
@@ -47,6 +49,7 @@ class DeleteDBRecords:
         # Validate input inside inputted lists.
         for i in range(len(dates)):
             assert type(dates[i]) == str
+            # Package inside one_tuple for use in parameterized query.
             dates[i] = (dates[i],)
 
         connection = sqlite3.Connection('transit_data.db')

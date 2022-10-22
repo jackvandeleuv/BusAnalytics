@@ -3,10 +3,12 @@ from QueryDB import QueryDB
 from DeleteDBRecords import DeleteDBRecords
 
 
+# If the user selected the option to delete all data from specific stops, the delete_window method of this class is
+# called.
 class DeleteInterface:
-    # If the user selected the option to delete all data from specific stops, this function is called.
     @staticmethod
     def __delete_by_stops():
+        # Loop until the user selects option 0).
         while True:
             user_input = input(
                 "***Delete By STOP_ID***\n0) Return to Delete Menu.\n1) See all stops in your database.\n"
@@ -22,12 +24,13 @@ class DeleteInterface:
                 # Inform the user about what stops are currently in the database. QueryDB executes a SQLite query.
                 stop_dict = QueryDB.get_scraped_stops()
                 print('Currently you have these stops in your database:\n')
+                # Display each stop and route in a formatted list.
                 for key, value in stop_dict.items():
                     print("STOP_ID: {:5d} (ROUTE: {:s})".format(key, value))
 
             if int(user_input) == 2:
                 stop_choice = input("Select which stops you'd like to delete data for (for multiple stops separate by "
-                                   "commas, e.g. 8864, 8894, 8809\n")
+                                    "commas, e.g. 8864, 8894, 8809\n")
                 print(f'Deleting all data for {stop_choice}')
                 # Process the user input. If they entered comma-separated values, this block is triggered, which cleans
                 # up the input.
@@ -63,23 +66,26 @@ class DeleteInterface:
                 # Inform the user about what stops are currently in the database. QueryDB executes a SQLite query.
                 print('Currently you have these routes in your database:\n')
                 routes = QueryDB.get_scraped_routes()
+                # Print formatted list of routes returned by query method.
                 for route in routes:
                     print(f"Route ID: {route[0]}")
 
             if int(user_input) == 2:
                 route_choice = input("Select which routes you'd like to delete data for separated by commas, for "
-                                   "example: 71A, 71C\n")
+                                     "example: 71A, 71C\n")
 
                 print(f'Deleting all data for {user_input}')
 
-                # Process the user input. If they entered comma-separated values, this block is triggered, which cleans up the
-                # input.
+                # Process the user input. If they entered comma-separated values, this block is triggered, which
+                # cleans up the input.
                 if ',' in route_choice:
                     routes_to_delete = route_choice.split(',')
                     for i in range(len(routes_to_delete)):
+                        # Reformat routes to remove white_space. Convert to canonical upper-case format for querying.
                         routes_to_delete[i] = routes_to_delete[i].strip().upper()
 
                 # If one route was entered, strip off the white space and wrap it in a list.
+                routes_to_delete = []
                 if ',' not in route_choice:
                     routes_to_delete = [route_choice.strip().upper()]
 
@@ -121,6 +127,7 @@ class DeleteInterface:
                     dates_to_delete = date_choice.split(',')
                     for i in range(len(dates_to_delete)):
                         dates_to_delete[i] = dates_to_delete[i].strip()
+                        # Check to make sure the date strs have the correct number of characters.
                         if len(dates_to_delete[i]) != 10:
                             print("Invalid date format entered. Please enter dates formatted like this: 2022-01-01")
                             valid_input = False
@@ -128,10 +135,12 @@ class DeleteInterface:
                 # If one date was entered, strip off the white space and wrap it in a list.
                 if ',' not in date_choice:
                     dates_to_delete = [date_choice.strip()]
+                    # Check to make sure the date strs have the correct number of characters.
                     if len(dates_to_delete[0]) != 10:
                         print("Invalid date format entered. Please enter dates formatted like this: 2022-01-01")
                         valid_input = False
 
+                # Execute the delete command if the dates were formatted correctly.
                 if valid_input:
                     print(f'Deleting all data for {date_choice}')
                     # Pass the list of dates to delete_by_criteria, which deletes all data points matching those dates.
@@ -145,9 +154,10 @@ class DeleteInterface:
             # Get the list of all tuples in the ESTIMATES table.
             n_records = QueryDB.count_estimates()[0][0]
 
-            user_input = input(f"\n***Delete Data from Local Database***\nYou currently have {n_records} scraped ETA data "
-                               "points in your database.\n0) Return to Main Menu.\n1) Delete all scraped data.\n"
-                               "2) Delete by stop ID.\n3) Delete by route ID.\n4) Delete by dates.\n")
+            user_input = input(
+                f"\n***Delete Data from Local Database***\nYou currently have {n_records} scraped ETA data "
+                "points in your database.\n0) Return to Main Menu.\n1) Delete all scraped data.\n"
+                "2) Delete by stop ID.\n3) Delete by route ID.\n4) Delete by dates.\n")
 
             if not user_input.isdigit():
                 print("\nPlease enter an integer to select one of the menu options.\n")
