@@ -13,21 +13,23 @@ import re
 # the CreateDB class to create the routes and stops tables.
 
 # Primary function called by outside modules is get_stop_list().
-
-
 class Scraper:
     # This function checks the HTML page for a particular bus route, and determines whether the route includes INBOUND
     # buses, OUTBOUND buses, both, or neither. The result is two booleans values: outbound and inbound.
     @staticmethod
     def __check_available_directions(route_num):
+        # This URL, when completed with the route number, contains between zero and two links. If the two links are
+        # present, they will be labeled OUTBOUND and INBOUND respectively. By combining this information with route_id
+        # and stop_id we will be able to get the complete list of valid URLs.
         url = f'https://truetime.portauthority.org/bustime/wireless/html/selectdirection' \
               f'.jsp?route=Port%20Authority%20Bus:{route_num}'
         page = requests.get(url)
-        # Specify lxml parser to avoid different defaults on different machines
+        # Specify lxml parser to avoid different default parsers on different machines.
         soup = bs4.BeautifulSoup(page.text, features='lxml')
         soup = soup.text
         inbound = False
         outbound = False
+        # Check
         if 'OUTBOUND' in soup:
             outbound = True
         if 'INBOUND' in soup:

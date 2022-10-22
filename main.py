@@ -7,6 +7,8 @@ from CreateDB import CreateDB
 from os import path
 
 
+# This menu is displayed to the user anytime that the program's directory does not contain a file called
+# transit_data.db.
 def new_install_window():
     user_input = input("Welcome to BusAnalytics. Your database is currently empty. To start using this program select "
                        "option 1) which will pull an updated list of routes and stops from the Pittsburgh Port "
@@ -20,14 +22,21 @@ def new_install_window():
 
     if int(user_input) == 1:
         print("Downloading information from TrueTime...\n")
+        # When the user selects this option, a new database file called transit_data.db is created, and CreateDB pulls
+        # an updated list of routes and stops from the TrueTime website.
         CreateDB.recreate_db_with_new_stops_n_routes()
 
 
 def main():
+    # If there is no database file in the directory, redirect to the install menu, which gives the user an option to
+    # create one.
     if not path.exists("transit_data.db"):
         new_install_window()
 
+    # If a database file exists, go directly to the main menu.
     if path.exists("transit_data.db"):
+        # Create a new StatsGenerator object, which holds user-selected settings about what routes/stops/dates to
+        # filter by.
         stat_gen = StatsGenerator()
         while True:
             main_select = input("***Main Menu***\n0) Quit.\n1) Scrape new data.\n2) Delete existing data.\n"
@@ -39,6 +48,7 @@ def main():
             if int(main_select) == 0:
                 break
 
+            # These three options open three separate windows, each of which has submenu options.
             if int(main_select) == 1:
                 ScrapeInterface.scrape_window()
 

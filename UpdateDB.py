@@ -8,12 +8,7 @@ import datetime
 
 # This class allows you to continuously scrape TrueTime for minute-by-minute bus arrival estimates. It adds the
 # resulting data into the transit_data.db database.
-
-
 class UpdateDB:
-    def __init__(self):
-        pass
-
     # Private method that queries the database and packages the results together in a pandas Series, with each value
     # being a url.
     @staticmethod
@@ -49,7 +44,7 @@ class UpdateDB:
         for result in results:
             url = 'https://truetime.portauthority.org/bustime/wireless/html/' \
                   'eta.jsp?route=Port+Authority+Bus%3A' + result[0] + '&direction' \
-                '=Port+Authority+Bus%3A' + result[1] + '&id=Port+Authority+Bus%3A' + result[2] + '&showAllBusses=on'
+                  '=Port+Authority+Bus%3A' + result[1] + '&id=Port+Authority+Bus%3A' + result[2] + '&showAllBusses=on'
             urls_and_data.append([result[0], result[1], result[2], url])
 
         return urls_and_data
@@ -78,8 +73,10 @@ class UpdateDB:
         # even.
         for index, string in enumerate(eta_text):
             if index % 2 == 0:
+                # Route names are preceded by #, which allows us to find them using a regular expression.
                 route_search = re.search(r'^#\d+[a-zA-Z]*', string)
                 if route_search is not None:
+                    # Strip off the #, which will be at the beginning of every string found by the regular expression.
                     eta_list.append(route_search.group()[1:])
             if index % 2 != 0:
                 # If the ETA string comes back as 'DUE', then the bus arrival is imminent and we assign an ETA value of
@@ -88,6 +85,7 @@ class UpdateDB:
                     eta_list.append(0)
 
                 if string != 'DUE':
+                    # Isolate the numeric values in the string.
                     time_search = re.search(r'^\d+', string)
                     if time_search is not None:
                         eta_list.append(time_search.group())
@@ -116,6 +114,7 @@ class UpdateDB:
 
     @staticmethod
     def scrape_estimates(lines, scrape_id):
+        # Calling this method provides the list of URLs associated with the given lines.
         urls_and_data = UpdateDB.__get_urls_to_query(lines)
         session = requests.session()
         estimates = []
@@ -123,14 +122,19 @@ class UpdateDB:
         # Every route/stop combo we're interested in is a list in urls_and_data
         for combo in urls_and_data:
             url = combo[3]
+            # Get the current system time, which will be the time stamp for each estimate scraped.
             current_time = str(datetime.datetime.now())
 
+            # Gather the route_ids and etas from the stop page.
             strong_text = UpdateDB.__scrape_html_tags(session, url, 'larger', 'strong')
+            # Gather the vehicle_id and current passenger status of the vehicle.
             span_text = UpdateDB.__scrape_html_tags(session, url, 'smaller', 'span')
+            # Isolate and format the string data gathered by the two __scrape_html_tags method calls.
             eta_data = UpdateDB.__process_eta_text(strong_text)
             vehicle_data = UpdateDB.__process_vehicle_text(span_text)
 
-            # Bare-minimum check for scrape failure.
+            # Each list should contain pairs of values, matching the pairs in the accompanying list. If this is not the
+            # case, the data is not added to the database.
             if len(eta_data) % 2 == 0 and len(eta_data) == len(vehicle_data):
                 routeno = combo[0]
                 for index, data in enumerate(eta_data):
@@ -140,6 +144,7 @@ class UpdateDB:
                         vehicleno = vehicle_data[index]
                         passengers = vehicle_data[index + 1]
                         stop_id = combo[2]
+                        # Append the correctly ordered and formatted data from the TrueTime site.
                         estimates.append((eta, current_time, vehicleno, passengers, stop_id, routeno, scrape_id))
 
         session.close()
@@ -150,6 +155,7 @@ class UpdateDB:
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
 
+        # Insert a row into ESTIMATES using a parameterized query.
         cursor.executemany("""INSERT INTO ESTIMATES (ETA, TIME_CHECKED, VEHICLE_ID, PASSENGERS, STOP_ID, ROUTE_ID, 
                                 SCRAPE_ID) VALUES(?, ?, ?, ?, ?, ?, ?)""", estimates)
 

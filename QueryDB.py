@@ -30,6 +30,7 @@ class QueryDB:
     def get_scraped_stops():
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
+        # SELECT both stops and routes, so that they can be combined together and returned.
         cursor.execute("SELECT DISTINCT(STOP_ID), ROUTES.ROUTE_ID FROM ESTIMATES "
                        "JOIN STOPS_ON_ROUTES USING(STOP_ID) "
                        "JOIN ROUTES USING(ROUTE_ID)"
@@ -105,6 +106,7 @@ class QueryDB:
         connection = sqlite3.Connection('transit_data.db')
         cursor = connection.cursor()
 
+        # Count the primary keys in the ESTIMATES table.
         cursor.execute("""SELECT COUNT(ID) FROM ESTIMATES""")
 
         results = cursor.fetchall()
