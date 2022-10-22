@@ -21,13 +21,11 @@ class CreateDB:
     # This method creates a fresh copy of transit_data.db, and then scrapes the TrueTime Pittsburgh Port Authority
     # website to find all active routes and stops that are available to scrape.
     @staticmethod
-    def reset_db_with_new_stops_n_routes():
+    def recreate_db_with_new_stops_n_routes():
         # Create four blank tables
         CreateDB.__make_empty_tables()
         # Scrape TrueTime and fill in all the current bus routes and stops
         CreateDB.__fill_routes_and_stops()
-        # Print the table schema to check that four new tables were created.
-        CreateDB.__confirm_empty_table_generated()
 
     # Calls PRAGMA and prints meta_data about the current tables in the transit_data db.
     @staticmethod
@@ -88,6 +86,7 @@ class CreateDB:
         VEHICLE_ID STRING,
         PASSENGERS STRING,
         STOP_ID INTEGER,
+        SCRAPE_ID REAL,
         ROUTE_ID TEXT,
         FOREIGN KEY (STOP_ID)
             REFERENCES STOPS(STOP_ID),

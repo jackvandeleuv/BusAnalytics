@@ -19,6 +19,7 @@ class AnalyzeInterface:
 
             if int(user_input) == 1:
                 stat_gen.print_filters()
+                # This submenu loops until the user selects option 0).
                 while True:
                     filter_choice = input("Select one of the following options:\n0) Return\n1) Add new stop filters.\n"
                                           "2) Add new route filters.\n3) Add new day filters.\n4) Delete current stop "

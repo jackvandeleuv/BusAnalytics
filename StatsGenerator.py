@@ -172,5 +172,8 @@ class StatsGenerator:
         all_gaps = []
         for value in gaps_dict.values():
             all_gaps.extend(value)
-        print("OVERALL AVG FREQUENCY: EVERY {:4.3f} MINS\n".format(
-            sum(all_gaps) / (len(all_gaps) * 60)))
+        if len(all_gaps):
+            print("OVERALL AVG FREQUENCY: EVERY {:4.3f} MINS\n".format(
+                sum(all_gaps) / (len(all_gaps) * 60)))
+        if not len(all_gaps):
+            print("OVERALL AVG FREQUENCY: NO DATA FOUND USING CURRENT FILTERS")
