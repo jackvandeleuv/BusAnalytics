@@ -1,3 +1,4 @@
+import copy
 import sqlite3
 import timeit
 from datetime import datetime as inner_dt
@@ -10,30 +11,25 @@ class StatsGenerator:
         self.__stop_filters = []
         self.__route_filters = []
         self.__day_filters = []
-        self.__group_stops = False
-        self.__group_routes = False
-        self.__group_days = False
 
-    def set_stop_filters(self, stops):
-        assert type(stops) == list
+    def set_stop_filters(self, newStops):
+        assert type(newStops) == list
+        stops = copy.deepcopy(newStops)
         self.__stop_filters = stops
 
-    def set_route_filters(self, routes):
-        assert type(routes) == list
+    def set_route_filters(self, newRoutes):
+        assert type(newRoutes) == list
+        routes = copy.deepcopy(newRoutes)
         self.__route_filters = routes
 
-    def set_day_filters(self, days):
-        assert type(days) == list
+    def set_day_filters(self, newDays):
+        assert type(newDays) == list
+        days = copy.deepcopy(newDays)
         self.__day_filters = days
 
-    def set_stop_group(self, boolean):
-        self.__group_stops = boolean
-
-    def set_route_group(self, boolean):
-        self.__group_routes = boolean
-
-    def set_day_group(self, boolean):
-        self.__group_days = boolean
+    def print_filters(self):
+        print(f"Your current filters are:\nSTOP_IDS: {self.__stop_filters}\nROUTE_IDS: {self.__route_filters}\n"
+              f"DAYS: {self.__day_filters}\n")
 
     def __make_where_clause(self):
         where_clause = ""
@@ -61,48 +57,38 @@ class StatsGenerator:
             subclauses.append(days_in)
 
         if len(subclauses) == 1:
-            where_clause = "WHERE" + subclauses[0]
+            where_clause = "AND " + subclauses[0]
 
         if len(subclauses) > 1:
-            subclauses = "AND".join(subclauses)
-            where_clause = "WHERE" + subclauses
+            where_clause = "AND".join(subclauses)
+            where_clause = "AND " + where_clause
 
         return where_clause
-
-    def make_group_clause(self):
-        group_clause = ""
-        subclauses = []
-
-        if self.__group_stops:
-            stop_g = "STOP_ID"
-            subclauses.append(stop_g)
-
-        if self.__group_routes:
-            route_g = "ROUTE_ID"
-            subclauses.append(route_g)
-
-        if self.__group_days:
-            day_g = "SUBSTR(TIME_CHECKED, 1, 10)"
-            subclauses.append(day_g)
-
-        if len(subclauses) != 0:
-            subclauses = ", ".join(subclauses)
-            group_clause = "GROUP BY " + subclauses
-
-        print(group_clause)
 
     def get_scrape_ids(self, cur):
         cur.execute("SELECT DISTINCT(SCRAPE_ID) FROM ESTIMATES")
         scrape_ids = cur.fetchall()
         return scrape_ids
 
-    def calc_zeros(self, cur, scrape_id):
-        cur.execute("""
-                    SELECT STOP_ID, MAX(TIME_CHECKED), MIN(ETA), ROUTE_ID
-                    FROM ESTIMATES
-                    WHERE SCRAPE_ID = ? 
-                    GROUP BY SCRAPE_ID, ROUTE_ID, STOP_ID, VEHICLE_ID
-                    """, scrape_id)
+    def calc_zeros(self, cur, scrape_id, both_bool):
+        query = """SELECT STOP_ID, MAX(TIME_CHECKED), MIN(ETA), ROUTE_ID
+                    FROM ESTIMATES 
+                    WHERE SCRAPE_ID = ? """
+
+        query = query + self.__make_where_clause()
+        query = query + "GROUP BY SCRAPE_ID, STOP_ID, VEHICLE_ID "
+        if both_bool:
+            query = query + ", ROUTE_ID"
+
+        params = [scrape_id]
+        if len(self.__stop_filters) != 0:
+            params.extend(self.__stop_filters)
+        if len(self.__route_filters) != 0:
+            params.extend(self.__route_filters)
+        if len(self.__day_filters) != 0:
+            params.extend(self.__day_filters)
+
+        cur.execute(query, tuple(params))
         results = cur.fetchall()
 
         zeros_dict = {}
@@ -113,12 +99,17 @@ class StatsGenerator:
             route_id = row[3]
             arrival = inner_dt.fromisoformat(max_stamp) + datetime.timedelta(minutes=eta)
 
-            stop_in_row = (stop_id, route_id) in zeros_dict
+            if both_bool:
+                zeros_key = (stop_id, route_id)
+            if not both_bool:
+                zeros_key = stop_id
+
+            stop_in_row = zeros_key in zeros_dict
             if stop_in_row:
-                temp_list = zeros_dict[(stop_id, route_id)]
+                temp_list = zeros_dict[zeros_key]
                 temp_list.append(arrival)
             if not stop_in_row:
-                zeros_dict[(stop_id, route_id)] = [arrival]
+                zeros_dict[zeros_key] = [arrival]
 
         return zeros_dict
 
@@ -133,55 +124,53 @@ class StatsGenerator:
             gaps_list.append(delta_secs)
         return gaps_list
 
-    def calc_gaps(self):
+    def calc_gaps(self, both_bool):
         conn = sqlite3.Connection("transit_data.db")
         cur = conn.cursor()
 
         scrape_ids = self.get_scrape_ids(cur)
-        gaps_by_stop = {}
+        gaps_dict = {}
         for scrape_id in scrape_ids:
-            zeros_dict = self.calc_zeros(cur, scrape_id)
+            zeros_dict = self.calc_zeros(cur, scrape_id[0], both_bool)
             for key, value in zeros_dict.items():
-                key_in_gaps_dict = key in gaps_by_stop
+                key_in_gaps_dict = key in gaps_dict
                 if not key_in_gaps_dict:
-                    gaps_by_stop[key] = self.zeros_to_gaps(value)
+                    gaps_dict[key] = self.zeros_to_gaps(value)
                 if key_in_gaps_dict:
-                    gaps_by_stop[key].extend(self.zeros_to_gaps(value))
+                    gaps_dict[key].extend(self.zeros_to_gaps(value))
 
         conn.commit()
-        return gaps_by_stop
+        return gaps_dict
 
-    def query_test(self):
-        conn = sqlite3.Connection("transit_data.db")
-        cur = conn.cursor()
+    def group_by_both(self):
+        print("Calculating frequency...\n")
+        gaps_dict = self.calc_gaps(True)
+        for key, value in gaps_dict.items():
+            if len(value):
+                print("STOP_ID: {:5d}, ROUTE_ID: {:>3s}, AVG FREQUENCY: EVERY {:4.3f} MINS".format(
+                    key[0], str(key[1]), sum(value) / (len(value) * 60)
+                ))
+            if not len(value):
+                print("STOP_ID: {:5d}, ROUTE_ID: {:>3s}, AVG FREQUENCY: NOT FOUND".format(
+                    key[0], str(key[1])))
 
-        cur.execute("""
-        SELECT *
-        FROM ESTIMATES
-        WHERE STOP_ID = 8192
-        """)
-        results = cur.fetchall()
-        for r in results:
-            print(r)
+    def group_by_stop(self):
+        print("Calculating frequency...\n")
+        gaps_dict = self.calc_gaps(False)
+        for key, value in gaps_dict.items():
+            if len(value):
+                print("STOP_ID: {:5d}, AVG FREQUENCY: EVERY {:4.3f} MINS".format(
+                    key, sum(value) / (len(value) * 60)
+                ))
+            if not len(value):
+                print("STOP_ID: {:5d}, AVG FREQUENCY: NOT FOUND".format(
+                    key))
 
-        # cur.execute("SELECT * FROM ESTIMATES WHERE VEHICLE_ID = 5810 AND SCRAPE_ID = 1665243291.0")
-        # results = cur.fetchall()
-        # for r in results:
-        #     print(r)
-        # conn.commit()
-
-
-sg = StatsGenerator()
-gaps_by_stops = sg.calc_gaps()
-for key, value in gaps_by_stops.items():
-    total = 0
-    for v in value:
-        if key == 8192:
-            print(v)
-        total += v
-    if total != 0:
-        print(key, ":", total / (len(value) * 60))
-
-
-
-# sg.query_test()
+    def overall_frequency(self):
+        print("Calculating frequency...\n")
+        gaps_dict = self.calc_gaps(False)
+        all_gaps = []
+        for value in gaps_dict.values():
+            all_gaps.extend(value)
+        print("OVERALL AVG FREQUENCY: EVERY {:4.3f} MINS\n".format(
+            sum(all_gaps) / (len(all_gaps) * 60)))

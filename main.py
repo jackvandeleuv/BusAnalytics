@@ -2,9 +2,11 @@ import DeleteInterface
 from ScrapeInterface import ScrapeInterface
 from DeleteInterface import DeleteInterface
 from AnalyzeInterface import AnalyzeInterface
+from StatsGenerator import StatsGenerator
 
 
 def main():
+    stat_gen = StatsGenerator()
     while True:
         main_select = input("***Main Menu***\n0) Quit.\n1) Scrape new data.\n2) Delete existing data.\n"
                             "3) Analyse existing data.\n")
@@ -22,7 +24,7 @@ def main():
             DeleteInterface.delete_window()
 
         if int(main_select) == 3:
-            AnalyzeInterface.analyze_window()
+            AnalyzeInterface.analyze_window(stat_gen)
 
 
 if __name__ == '__main__':
