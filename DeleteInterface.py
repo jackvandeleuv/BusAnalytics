@@ -4,9 +4,6 @@ from DeleteDBRecords import DeleteDBRecords
 
 
 class DeleteInterface:
-    def __init__(self):
-        pass
-
     # If the user selected the option to delete all data from specific stops, this function is called.
     @staticmethod
     def __delete_by_stops():

@@ -15,9 +15,6 @@ from Scraper import Scraper
 #     a unique combination of bus stop, route, and time stamp.
 # The methods in the CreateDB class create a SQLite3 database in the same directory.
 class CreateDB:
-    def __init__(self):
-        pass
-
     # This method creates a fresh copy of transit_data.db, and then scrapes the TrueTime Pittsburgh Port Authority
     # website to find all active routes and stops that are available to scrape.
     @staticmethod

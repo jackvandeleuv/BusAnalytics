@@ -1,10 +1,8 @@
 import sqlite3
 
+
 # This class allows us to make basic queries from our database to assist various parts of the application.
 class QueryDB:
-    def __init__(self):
-        pass
-
     # Returns all routes contained in the ROUTES table. This should be every route listed on the TrueTime website.
     @staticmethod
     def get_available_routes():

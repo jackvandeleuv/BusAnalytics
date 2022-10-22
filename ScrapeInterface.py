@@ -8,9 +8,6 @@ from DeleteDBRecords import DeleteDBRecords
 
 
 class ScrapeInterface:
-    def __init__(self):
-        pass
-
     @staticmethod
     def scrape_window():
         # Loop through the options in this sub-menu until the user requests to return to the main menu.

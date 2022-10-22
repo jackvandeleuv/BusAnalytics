@@ -10,7 +10,6 @@ from DeleteDBRecords import DeleteDBRecords
 # This unittest checks whether the DeleteDBRecords class is deleting data correctly. This test only works with the
 # 27,791,360 byte version of the test database, which has a known output.
 class TestAvgWaitTimeGenerator(unittest.TestCase):
-
     # The companion unittests called TestPreDeleteDBRecords already confirmed that the correct data is in our tables.
     # Now, we delete by three different criteria, and then check that all data in matching those criteria has been
     # deleted.

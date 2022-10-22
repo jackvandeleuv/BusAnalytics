@@ -16,7 +16,6 @@ import re
 
 
 class Scraper:
-
     # This function checks the HTML page for a particular bus route, and determines whether the route includes INBOUND
     # buses, OUTBOUND buses, both, or neither. The result is two booleans values: outbound and inbound.
     @staticmethod
