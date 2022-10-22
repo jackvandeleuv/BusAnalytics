@@ -1,5 +1,8 @@
 import sqlite3
-from datetime import datetime
+import timeit
+from datetime import datetime as inner_dt
+import datetime
+import time
 
 
 class StatsGenerator:
@@ -93,38 +96,92 @@ class StatsGenerator:
         scrape_ids = cur.fetchall()
         return scrape_ids
 
-    def calc_frequency(self):
+    def calc_zeros(self, cur, scrape_id):
+        cur.execute("""
+                    SELECT STOP_ID, MAX(TIME_CHECKED), MIN(ETA), ROUTE_ID
+                    FROM ESTIMATES
+                    WHERE SCRAPE_ID = ? 
+                    GROUP BY SCRAPE_ID, ROUTE_ID, STOP_ID, VEHICLE_ID
+                    """, scrape_id)
+        results = cur.fetchall()
+
+        zeros_dict = {}
+        for row in results:
+            stop_id = row[0]
+            max_stamp = row[1]
+            eta = row[2]
+            route_id = row[3]
+            arrival = inner_dt.fromisoformat(max_stamp) + datetime.timedelta(minutes=eta)
+
+            stop_in_row = (stop_id, route_id) in zeros_dict
+            if stop_in_row:
+                temp_list = zeros_dict[(stop_id, route_id)]
+                temp_list.append(arrival)
+            if not stop_in_row:
+                zeros_dict[(stop_id, route_id)] = [arrival]
+
+        return zeros_dict
+
+    def zeros_to_gaps(self, zeros_list):
+        zeros_list.sort(reverse=True)
+        gaps_list = []
+        for i in range(len(zeros_list) - 1):
+            older_zero = zeros_list[i]
+            newer_zero = zeros_list[i + 1]
+            delta = older_zero - newer_zero
+            delta_secs = delta.total_seconds()
+            gaps_list.append(delta_secs)
+        return gaps_list
+
+    def calc_gaps(self):
         conn = sqlite3.Connection("transit_data.db")
         cur = conn.cursor()
+
         scrape_ids = self.get_scrape_ids(cur)
-        for id in scrape_ids:
-            cur.execute("""
-            SELECT ETA, TIME_CHECKED, VEHICLE_ID, STOP_ID
-            FROM ESTIMATES
-            WHERE SCRAPE_ID = ?
-            ORDER BY STOP_ID
-            """, id)
-            estimates = cur.fetchall()
-            for estimate in estimates:
-                print(estimate)
+        gaps_by_stop = {}
+        for scrape_id in scrape_ids:
+            zeros_dict = self.calc_zeros(cur, scrape_id)
+            for key, value in zeros_dict.items():
+                key_in_gaps_dict = key in gaps_by_stop
+                if not key_in_gaps_dict:
+                    gaps_by_stop[key] = self.zeros_to_gaps(value)
+                if key_in_gaps_dict:
+                    gaps_by_stop[key].extend(self.zeros_to_gaps(value))
 
         conn.commit()
+        return gaps_by_stop
 
     def query_test(self):
         conn = sqlite3.Connection("transit_data.db")
         cur = conn.cursor()
 
         cur.execute("""
-        SELECT SCRAPE_ID, MIN(TIME_CHECKED), MAX(TIME_CHECKED)
+        SELECT *
         FROM ESTIMATES
-        WHERE SCRAPE_ID = 1665243291.0
+        WHERE STOP_ID = 8192
         """)
         results = cur.fetchall()
         for r in results:
             print(r)
 
-        conn.commit()
+        # cur.execute("SELECT * FROM ESTIMATES WHERE VEHICLE_ID = 5810 AND SCRAPE_ID = 1665243291.0")
+        # results = cur.fetchall()
+        # for r in results:
+        #     print(r)
+        # conn.commit()
 
 
 sg = StatsGenerator()
-sg.query_test()
+gaps_by_stops = sg.calc_gaps()
+for key, value in gaps_by_stops.items():
+    total = 0
+    for v in value:
+        if key == 8192:
+            print(v)
+        total += v
+    if total != 0:
+        print(key, ":", total / (len(value) * 60))
+
+
+
+# sg.query_test()

@@ -148,7 +148,7 @@ class DeleteInterface:
             # Get the list of all tuples in the ESTIMATES table.
             n_records = QueryDB.count_estimates()[0][0]
 
-            user_input = input(f"\n***Delete Data from Local Database\nYou currently have {n_records} scraped ETA data "
+            user_input = input(f"\n***Delete Data from Local Database***\nYou currently have {n_records} scraped ETA data "
                                "points in your database.\n0) Return to Main Menu.\n1) Delete all scraped data.\n"
                                "2) Delete by stop ID.\n3) Delete by route ID.\n4) Delete by dates.\n")
 
