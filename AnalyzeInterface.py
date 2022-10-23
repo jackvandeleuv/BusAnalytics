@@ -6,7 +6,8 @@ class AnalyzeInterface:
         while True:
             user_input = input("***Calculate Frequency of Bus Arrivals***\n0) Return to main menu.\n1) Modify filters."
                                "\n2) Calculate frequencies, grouped by stop.\n3) Calculate frequencies, grouped by "
-                               "routes and stops.\n4) Calculate overall average frequency.\n")
+                               "routes and stops.\n4) Calculate overall average frequency (broken out by stop only, not"
+                               " route!)\n")
 
             if not user_input.isdigit():
                 print("\nPlease enter an integer to select one of the menu options.\n")
