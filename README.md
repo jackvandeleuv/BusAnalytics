@@ -20,11 +20,11 @@ The first submenu allows you to scrape new data from the Pittsburgh Port Authori
 
 For every repetition of the scraping function, the program will download a snapshot of every estimated time of arrival (ETA) of every bus at every stop on each of the routes you specify. Everytime BusAnalytics completes this process, it gets a snapshot of the expected wait times for every bus and stop, which can be synthesized into summary statistics in menu 3.
 
-# Delete existing data
+# 2) Delete existing data
 
 The second menu allows you to delete data from your database. You can delete data gathered from specific stops or routes. You can also pick certain days for which you wish to delete data (if, for whatever reason, there were some days where you used the program to scrape data that you now want to delete).
 
-# Analyse existing data
+# 3) Analyse existing data
 
 There are two main things you can do on the data analysis menu. One option is to set filters. If you're interested in seeing your data filtered by specific stops, routes, or days, you can select those options on this menu. 
 
